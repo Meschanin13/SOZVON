@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Бесплатный WebRTC Созвон</title>
+    <!-- Подключаем библиотеку PeerJS из бесплатного CDN -->
+    <script src="https://unpkg.com"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f2f5; }
+        video { width: 45%; max-width: 400px; background: #222; border-radius: 8px; margin: 10px; }
+        .controls { margin: 20px; padding: 20px; background: white; display: inline-block; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <h1>Простой созвон через PeerJS</h1>
+    
+    <div class="controls">
+        <p>Ваш ID для подключения: <strong id="my-id">Загрузка...</strong></p>
+        <input type="text" id="peer-id-input" placeholder="Введите ID собеседника">
+        <button id="connect-btn">Позвонить</button>
+    </div>
+
+    <div>
+        <video id="local-video" autoplay muted playsinline></video>
+        <video id="remote-video" autoplay playsinline></video>
+    </div>
+
+    <script>
+        let localStream;
+        // Создаем подключение к бесплатному облачному серверу PeerJS
+        const peer = new Peer(); 
+
+        // 1. Получаем доступ к камере и микрофону
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                document.getElementById('local-video').srcObject = stream;
+            })
+            .catch(err => alert('Не удалось получить доступ к камере/микрофону: ' + err));
+
+        // 2. Отображаем ваш ID, когда сервер PeerJS его выдаст
+        peer.on('open', (id) => {
+            document.getElementById('my-id').innerText = id;
+        });
+
+        // 3. Сценарий А: Кто-то звонит НАМ
+        peer.on('call', (call) => {
+            // Отвечаем на звонок и отправляем свой видеопоток
+            call.answer(localStream);
+            // Принимаем видеопоток от собеседника
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-video').srcObject = remoteStream;
+            });
+        });
+
+        // 4. Сценарий Б: МЫ звоним кому-то по кнопке
+        document.getElementById('connect-btn').addEventListener('click', () => {
+            const peerId = document.getElementById('peer-id-input').value;
+            if (!peerId) return alert('Введите ID!');
+            
+            // Звоним собеседнику и передаем свой поток
+            const call = peer.call(peerId, localStream);
+            // Получаем его видеопоток в ответ
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-video').srcObject = remoteStream;
+            });
+        });
+    </script>
+</body>
+</html>
