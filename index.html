@@ -29,8 +29,12 @@
     <script>
         let localStream;
         // Создаем подключение к бесплатному облачному серверу PeerJS
-        const peer = new Peer(); 
-
+        //const peer = new Peer(); 
+        const peer = new Peer({
+            host: '://herokuapp.com', // или оставьте пустой host, но укажите secure: true
+            secure: true,
+            port: 443
+        });
         // 1. Получаем доступ к камере и микрофону
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(stream => {
