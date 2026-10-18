@@ -31,9 +31,10 @@
         // Создаем подключение к бесплатному облачному серверу PeerJS
         //const peer = new Peer(); 
         const peer = new Peer({
-            host: '://herokuapp.com', // или оставьте пустой host, но укажите secure: true
+            host: '0.peerjs.com',
             secure: true,
             port: 443,
+            path: '/',
             debug: 3
         });
         // 1. Получаем доступ к камере и микрофону
